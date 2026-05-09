@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DRAM Types — DRAM University</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">DRAM<span>University</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links">
+        <li><a href="basics.html">Basics</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="types.html" class="active">DRAM Types</a></li>
+        <li><a href="operations.html">Operations</a></li>
+        <li><a href="timing.html">Timing</a></li>
+        <li><a href="advanced.html">Advanced</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../index.html">Home</a> › Module 03</div>
+      <div class="module-badge">Module 03 — DRAM Types</div>
+      <h1>Types of DRAM</h1>
+      <p>A complete tour of every major DRAM family — from synchronous SDRAM to HBM3E stacks — with specs, use-cases, and key innovations of each generation.</p>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <aside class="toc">
+      <h4>On This Page</h4>
+      <ul class="toc-list">
+        <li><a href="#sdram">SDRAM</a></li>
+        <li><a href="#ddr">DDR (DDR1)</a></li>
+        <li><a href="#ddr2">DDR2</a></li>
+        <li><a href="#ddr3">DDR3</a></li>
+        <li><a href="#ddr4">DDR4</a></li>
+        <li><a href="#ddr5">DDR5</a></li>
+        <li><a href="#lpddr">LPDDR (Mobile)</a></li>
+        <li><a href="#gddr">GDDR (Graphics)</a></li>
+        <li><a href="#hbm">HBM (High Bandwidth)</a></li>
+        <li><a href="#comparison">Full Comparison</a></li>
+      </ul>
+    </aside>
+
+    <article class="prose">
+
+      <h2 id="sdram">SDRAM — Synchronous DRAM (1993)</h2>
+      <p>Before SDRAM, DRAM was <em>asynchronous</em>: the CPU sent an address and waited an unpredictable amount of time for data. <strong>Synchronous DRAM</strong> introduced a clock signal, allowing the DRAM and the memory controller to operate in lockstep. This made pipelining and burst transfers practical.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">Key Innovations</h4>
+          <ul>
+            <li>Clocked interface (66–133 MHz)</li>
+            <li>Burst mode: transfer N words per command</li>
+            <li>Programmable CAS latency</li>
+            <li>Mode register for configuration</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent2);">Specs</h4>
+          <ul>
+            <li>Bus width: 64-bit</li>
+            <li>Voltage: 3.3 V</li>
+            <li>Transfer rate: 133–266 MT/s</li>
+            <li>Peak BW: ~2.1 GB/s</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <strong>Single Data Rate</strong>
+        SDRAM transfers data only on the rising edge of the clock — one transfer per clock cycle. This is the "single" in SDR-SDRAM.
+      </div>
+
+      <h2 id="ddr">DDR SDRAM — Double Data Rate (2000)</h2>
+      <p><strong>DDR</strong> doubled bandwidth without doubling the clock frequency by transferring data on <em>both</em> the rising and falling edges of the clock. A 100 MHz DDR clock yields 200 MT/s (megatransfers per second). DDR prefetches <strong>2 bits per cell</strong> per access (2n prefetch).</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">Key Innovations</h4>
+          <ul>
+            <li>Double data rate (both clock edges)</li>
+            <li>2n prefetch architecture</li>
+            <li>Differential clock (CK/CK̄)</li>
+            <li>DQS data strobe for timing</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent2);">Specs</h4>
+          <ul>
+            <li>Voltage: 2.5 V → 2.6 V</li>
+            <li>Transfer rate: 200–400 MT/s</li>
+            <li>Peak BW: ~3.2 GB/s</li>
+            <li>Densities: 64 Mb – 1 Gb</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="ddr2">DDR2 (2003)</h2>
+      <p>DDR2 doubled the prefetch to <strong>4n</strong>, allowing the internal array to run at 1/4 the I/O rate. This enabled higher I/O clock speeds without stressing the core array. Lower supply voltage reduced power.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">Key Innovations</h4>
+          <ul>
+            <li>4n prefetch (4 bits fetched per access)</li>
+            <li>On-die termination (ODT)</li>
+            <li>Posted CAS additive latency</li>
+            <li>OCD (Off-Chip Driver) calibration</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent2);">Specs</h4>
+          <ul>
+            <li>Voltage: 1.8 V</li>
+            <li>Transfer rate: 400–1066 MT/s</li>
+            <li>Peak BW: ~8.5 GB/s</li>
+            <li>Densities: up to 4 Gb</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="ddr3">DDR3 (2007)</h2>
+      <p>DDR3 pushed the prefetch to <strong>8n</strong> and cut voltage to 1.5 V. It introduced <strong>ZQ calibration</strong> (dynamic impedance matching) and <strong>write leveling</strong> to handle signal integrity at high frequencies. DDR3 dominated from 2009–2015 and is still used in embedded and industrial applications.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">Key Innovations</h4>
+          <ul>
+            <li>8n prefetch architecture</li>
+            <li>Write leveling</li>
+            <li>ZQ impedance calibration</li>
+            <li>Fly-by topology on DIMMs</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent2);">Specs</h4>
+          <ul>
+            <li>Voltage: 1.5 V (DDR3L: 1.35 V)</li>
+            <li>Transfer rate: 800–2133 MT/s</li>
+            <li>Peak BW: ~17 GB/s</li>
+            <li>Densities: up to 8 Gb</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="ddr4">DDR4 (2012 spec, mainstream 2014)</h2>
+      <p>DDR4 kept the 8n prefetch but reorganized the die into <strong>bank groups</strong>, enabling much faster back-to-back column accesses across groups (tCCD_S = 4 clocks vs. tCCD_L = 6 clocks within a group). Voltage dropped to 1.2 V. DDR4 is the dominant desktop and server standard through 2024.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">Key Innovations</h4>
+          <ul>
+            <li>Bank groups (2 or 4)</li>
+            <li>Per-DRAM addressability (DDR4 DDP)</li>
+            <li>CRC for command/address bus</li>
+            <li>Parity on CA bus</li>
+            <li>Pseudo Open Drain (POD) signaling</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent2);">Specs</h4>
+          <ul>
+            <li>Voltage: 1.2 V</li>
+            <li>Transfer rate: 1600–3200 MT/s (XMP to 5333+)</li>
+            <li>Peak BW: ~51 GB/s (dual-channel)</li>
+            <li>Densities: up to 32 Gb</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="ddr5">DDR5 (2020 spec, mainstream 2021+)</h2>
+      <p>DDR5 is the most significant architectural overhaul since DDR1. Key changes include a <strong>doubled prefetch to 16n</strong>, an on-module voltage regulator (PMIC), <strong>on-die ECC</strong> for data integrity within the chip, and the channel split from one 64-bit channel to <strong>two independent 32-bit subchannels</strong> per DIMM.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">Key Innovations</h4>
+          <ul>
+            <li>16n prefetch (double DDR4)</li>
+            <li>Two 32-bit subchannels per DIMM</li>
+            <li>On-die ECC (ODECC)</li>
+            <li>On-module PMIC (power management IC)</li>
+            <li>Decision Feedback Equalization (DFE)</li>
+            <li>Same Bank Refresh (SBR) to reduce refresh overhead</li>
+            <li>8 bank groups × 4 banks = 32 banks per die</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent2);">Specs</h4>
+          <ul>
+            <li>Voltage: 1.1 V</li>
+            <li>Transfer rate: 4800–8400 MT/s (JEDEC); 12800+ MT/s (OC)</li>
+            <li>Peak BW: ~134 GB/s (dual-channel DDR5-8400)</li>
+            <li>Densities: up to 64 Gb per die</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <strong>DDR5 Subchannels</strong>
+        Each DDR5 DIMM presents two independent 32-bit (+ 8-bit ECC) subchannels to the memory controller. The controller can issue commands to each subchannel independently, effectively doubling command bandwidth compared to DDR4.
+      </div>
+
+      <h2 id="lpddr">LPDDR — Low Power DDR (Mobile)</h2>
+      <p><strong>LPDDR</strong> is the mobile-optimized variant of DDR. It prioritizes power efficiency over raw bandwidth through lower voltages, deeper power-down states, and die-level integration (often soldered directly to the PCB as a package-on-package or PoP).</p>
+
+      <table>
+        <thead><tr><th>Generation</th><th>Voltage</th><th>Max Rate</th><th>Key Feature</th></tr></thead>
+        <tbody>
+          <tr><td>LPDDR3</td><td>1.2 V</td><td>2133 MT/s</td><td>Low voltage DDR3 derivative</td></tr>
+          <tr><td>LPDDR4</td><td>1.1 V</td><td>4266 MT/s</td><td>Dual 16-bit channels per package</td></tr>
+          <tr><td>LPDDR4X</td><td>0.6 V (I/O)</td><td>4266 MT/s</td><td>Ultra-low I/O swing</td></tr>
+          <tr><td>LPDDR5</td><td>1.05 V</td><td>6400 MT/s</td><td>Link ECC, Write-X, flexible burst</td></tr>
+          <tr><td>LPDDR5X</td><td>1.05 V</td><td>8533 MT/s</td><td>Extended speed via improved PHY</td></tr>
+        </tbody>
+      </table>
+
+      <p>LPDDR5X at 8533 MT/s (used in Snapdragon 8 Gen 3, Apple A17) delivers over <strong>136 GB/s</strong> aggregate bandwidth using four 16-bit channels — rivaling server DDR4 at a fraction of the power.</p>
+
+      <h2 id="gddr">GDDR — Graphics DDR</h2>
+      <p>Graphics workloads demand extreme bandwidth with wide buses. <strong>GDDR</strong> is purpose-built for GPUs, soldered directly to the graphics card PCB beside the GPU die. It sacrifices latency and uses higher voltages compared to DDR/LPDDR, optimizing instead for raw GB/s.</p>
+
+      <table>
+        <thead><tr><th>Generation</th><th>Rate</th><th>Bus Width</th><th>Notable Use</th></tr></thead>
+        <tbody>
+          <tr><td>GDDR5</td><td>up to 8 GT/s</td><td>256–384 bit</td><td>GTX 900, RX 400</td></tr>
+          <tr><td>GDDR5X</td><td>up to 14 GT/s</td><td>256 bit</td><td>GTX 1080</td></tr>
+          <tr><td>GDDR6</td><td>up to 16 GT/s</td><td>128–384 bit</td><td>RTX 30xx, RX 6000</td></tr>
+          <tr><td>GDDR6X</td><td>up to 21 GT/s</td><td>320–384 bit</td><td>RTX 3090, RTX 4090</td></tr>
+          <tr><td>GDDR7</td><td>up to 40 GT/s</td><td>128–256 bit</td><td>RTX 50xx (2025)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box note">
+        <strong>GDDR6X PAM4</strong>
+        GDDR6X uses PAM4 (Pulse Amplitude Modulation 4) signaling instead of NRZ, encoding 2 bits per symbol by using 4 voltage levels. This doubles the data rate without doubling the clock frequency — at the cost of more complex equalization.
+      </div>
+
+      <h2 id="hbm">HBM — High Bandwidth Memory</h2>
+      <p><strong>High Bandwidth Memory</strong> takes a radically different approach: instead of using a wide parallel bus on a PCB, DRAM dies are stacked vertically using <strong>Through-Silicon Vias (TSVs)</strong> and placed in the same package as the processor using <strong>2.5D interposer</strong> or <strong>3D</strong> integration.</p>
+
+      <p>This allows an enormous bus width — <strong>1024 bits per stack</strong> — at low clock frequencies, achieving massive bandwidth with lower power than GDDR.</p>
+
+      <table>
+        <thead><tr><th>Generation</th><th>Bandwidth/Stack</th><th>Capacity/Stack</th><th>Notable Use</th></tr></thead>
+        <tbody>
+          <tr><td>HBM1</td><td>128 GB/s</td><td>1–2 GB</td><td>AMD Fury (2015)</td></tr>
+          <tr><td>HBM2</td><td>256 GB/s</td><td>4–8 GB</td><td>AMD Vega, NVIDIA V100</td></tr>
+          <tr><td>HBM2E</td><td>460 GB/s</td><td>8–16 GB</td><td>NVIDIA A100, AMD MI250</td></tr>
+          <tr><td>HBM3</td><td>819 GB/s</td><td>16–24 GB</td><td>NVIDIA H100 (6 stacks = 3.35 TB/s!)</td></tr>
+          <tr><td>HBM3E</td><td>1.2 TB/s</td><td>24–36 GB</td><td>NVIDIA H200, AMD MI300X</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box warn">
+        <strong>Cost</strong>
+        HBM is extraordinarily expensive — typically 5–10× the cost per GB of GDDR6. Its use is limited to high-value compute accelerators (AI/ML GPUs, HPC), high-end CPUs (AMD EPYC 9004 with 3D V-Cache adjacent), and specialized ASICs where bandwidth-per-watt justifies the price.
+      </div>
+
+      <h2 id="comparison">Full Comparison Table</h2>
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Voltage</th><th>Max Rate</th><th>Bus Width</th><th>Primary Use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SDRAM</td><td>3.3 V</td><td>133 MT/s</td><td>64-bit</td><td>Legacy desktop/server</td></tr>
+          <tr><td>DDR1</td><td>2.5 V</td><td>400 MT/s</td><td>64-bit</td><td>Legacy desktop</td></tr>
+          <tr><td>DDR2</td><td>1.8 V</td><td>1066 MT/s</td><td>64-bit</td><td>Legacy desktop/server</td></tr>
+          <tr><td>DDR3</td><td>1.5 V</td><td>2133 MT/s</td><td>64-bit</td><td>Embedded, industrial</td></tr>
+          <tr><td>DDR4</td><td>1.2 V</td><td>3200 MT/s*</td><td>64-bit</td><td>Desktop, server (dominant)</td></tr>
+          <tr><td>DDR5</td><td>1.1 V</td><td>8400+ MT/s</td><td>2×32-bit</td><td>Desktop, server (new builds)</td></tr>
+          <tr><td>LPDDR5X</td><td>1.05 V</td><td>8533 MT/s</td><td>4×16-bit</td><td>Mobile, thin laptops</td></tr>
+          <tr><td>GDDR6</td><td>1.35 V</td><td>16 GT/s</td><td>32-bit/chip</td><td>GPUs (consumer)</td></tr>
+          <tr><td>GDDR7</td><td>1.1 V</td><td>40 GT/s</td><td>32-bit/chip</td><td>GPUs (RTX 50 series)</td></tr>
+          <tr><td>HBM3E</td><td>1.2 V</td><td>~9.6 Gbps/pin</td><td>1024-bit/stack</td><td>AI accelerators, HPC</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.82rem; color:var(--text-muted);">* JEDEC spec; XMP/EXPO profiles reach 6000+ MT/s on DDR4</p>
+
+      <div class="page-nav">
+        <a href="architecture.html" class="prev">Architecture</a>
+        <a href="operations.html" class="next">Operations</a>
+      </div>
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-bottom"><span>&copy; 2026 DRAM University. Open educational content.</span></div>
+  </footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operations — DRAM University</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">DRAM<span>University</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links">
+        <li><a href="basics.html">Basics</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="types.html">DRAM Types</a></li>
+        <li><a href="operations.html" class="active">Operations</a></li>
+        <li><a href="timing.html">Timing</a></li>
+        <li><a href="advanced.html">Advanced</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../index.html">Home</a> › Module 04</div>
+      <div class="module-badge">Module 04 — Operations</div>
+      <h1>DRAM Operations</h1>
+      <p>Step-by-step walkthrough of every DRAM command — ACTIVATE, READ, WRITE, PRECHARGE, REFRESH, and the state machine that governs them all.</p>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <aside class="toc">
+      <h4>On This Page</h4>
+      <ul class="toc-list">
+        <li><a href="#state-machine">Bank State Machine</a></li>
+        <li><a href="#precharge">PRECHARGE</a></li>
+        <li><a href="#activate">ACTIVATE (ACT)</a></li>
+        <li><a href="#read">READ</a></li>
+        <li><a href="#write">WRITE</a></li>
+        <li><a href="#refresh">REFRESH</a></li>
+        <li><a href="#power-down">Power-Down States</a></li>
+        <li><a href="#full-sequence">Full Read Sequence</a></li>
+        <li><a href="#command-encoding">Command Encoding</a></li>
+      </ul>
+    </aside>
+
+    <article class="prose">
+
+      <h2 id="state-machine">Bank State Machine</h2>
+      <p>Each DRAM bank operates as a simple state machine. At any moment a bank is in one of these states:</p>
+
+      <div class="diagram">
+        <div class="diagram-title">DRAM Bank State Machine</div>
+        <div style="font-family:var(--mono); font-size:0.8rem; display:flex; flex-direction:column; gap:6px; align-items:flex-start; max-width:520px;">
+          <div style="display:flex; align-items:center; gap:12px; width:100%;">
+            <div style="background:rgba(100,116,139,0.2); border:1px solid var(--border); border-radius:8px; padding:12px 20px; color:var(--text-dim); min-width:160px; text-align:center;">
+              <div style="font-weight:700;">IDLE / PRECHARGED</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">bit lines equalized</div>
+            </div>
+            <div style="color:var(--text-muted); font-size:1.2rem;">⇄</div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">ACT →<br/>← PRE</div>
+            <div style="color:var(--text-muted); font-size:1.2rem;">⇄</div>
+            <div style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); border-radius:8px; padding:12px 20px; color:var(--accent); min-width:160px; text-align:center;">
+              <div style="font-weight:700;">ACTIVE / OPEN</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">row in sense amps</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; padding-left:180px;">
+            <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:8px 16px; color:#6ee7b7; font-size:0.75rem;">READ / WRITE<br/>(column commands)</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; width:100%; padding-left:60px;">
+            <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:10px 16px; color:#fcd34d; font-size:0.8rem; text-align:center;">
+              <div style="font-weight:700;">REFRESHING</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">REF command</div>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.72rem;">(bank must be precharged first)</div>
+          </div>
+        </div>
+      </div>
+
+      <p>The fundamental rule: <strong>a bank must be precharged (idle) before it can be activated, and activated before it can be read or written.</strong></p>
+
+      <h2 id="precharge">PRECHARGE (PRE)</h2>
+      <p>Before a new row can be opened, the bit lines must return to their equilibrium voltage (VDD/2). This is called <strong>precharging</strong>. The PRECHARGE command closes the currently active row and initiates bit-line equalization.</p>
+
+      <h3>What happens electrically</h3>
+      <ol>
+        <li>The word line for the active row is de-asserted (transistors turn off)</li>
+        <li>An equalization circuit connects BL and BL̄ together through a resistor, driving both to VDD/2</li>
+        <li>After time <code>tRP</code> (Row Precharge time), the bank is ready for a new ACTIVATE</li>
+      </ol>
+
+      <div class="info-box note">
+        <strong>Precharge All (PREA)</strong>
+        The <code>PRECHARGE ALL</code> command precharges every bank simultaneously in one command. Useful before refresh or self-refresh entry.
+      </div>
+
+      <h2 id="activate">ACTIVATE (ACT)</h2>
+      <p>The ACTIVATE command opens a row in a bank. It is issued with a <strong>row address</strong> and bank address. The memory controller must wait at least <code>tRAS</code> (minimum active time) before precharging, and at least <code>tRCD</code> (RAS-to-CAS delay) before issuing a column command.</p>
+
+      <h3>What happens electrically</h3>
+      <ol>
+        <li>The row address decoder drives the selected word line high</li>
+        <li>All access transistors in that row turn on — connecting every cell to its bit line</li>
+        <li>Each cell's capacitor shares charge with its bit line, creating a tiny differential voltage (±50–100 mV)</li>
+        <li>Sense amplifiers detect and amplify this differential to full logic swing (VDD / GND)</li>
+        <li>The amplified values are written back to the capacitors (restoring destructively-read data)</li>
+        <li>The entire row now sits in the row buffer — ready for fast column access</li>
+      </ol>
+
+      <div class="diagram">
+        <div class="diagram-title">Bit Line Voltage During ACTIVATE</div>
+        <div style="font-family:var(--mono); font-size:0.78rem; max-width:500px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="width:60px; color:var(--text-muted); font-size:0.7rem;">BL (high)</span>
+            <div style="flex:1; height:24px; display:flex;">
+              <div style="width:25%; background:rgba(100,116,139,0.2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.68rem;">VDD/2</div>
+              <div style="width:15%; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:0.68rem;">+δ</div>
+              <div style="width:60%; background:rgba(59,130,246,0.3); border:1px solid rgba(59,130,246,0.5); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:0.68rem; font-weight:700;">VDD (amplified)</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="width:60px; color:var(--text-muted); font-size:0.7rem;">BL̄ (low)</span>
+            <div style="flex:1; height:24px; display:flex;">
+              <div style="width:25%; background:rgba(100,116,139,0.2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.68rem;">VDD/2</div>
+              <div style="width:15%; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); display:flex; align-items:center; justify-content:center; color:var(--red); font-size:0.68rem;">−δ</div>
+              <div style="width:60%; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); display:flex; align-items:center; justify-content:center; color:var(--red); font-size:0.68rem; font-weight:700;">GND (amplified)</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:0; margin-top:4px; padding-left:68px;">
+            <div style="width:25%; text-align:center; font-size:0.68rem; color:var(--text-muted);">Precharge</div>
+            <div style="width:15%; text-align:center; font-size:0.68rem; color:var(--accent);">Sense</div>
+            <div style="width:60%; text-align:center; font-size:0.68rem; color:var(--text-dim);">Amplified (Row Buffer holds data)</div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="read">READ</h2>
+      <p>After ACTIVATE, the memory controller issues a <strong>READ</strong> command with a column address. The DRAM selects the specified columns from the row buffer and drives the data onto the DQ pins.</p>
+
+      <h3>Burst Length</h3>
+      <p>DRAM always transfers data in <strong>bursts</strong> — a contiguous block of columns starting at the given address. Burst Length (BL) is configurable:</p>
+      <ul>
+        <li><strong>BL4</strong>: 4 transfers (used in some LPDDR and graphics modes)</li>
+        <li><strong>BL8</strong>: 8 transfers (standard for DDR3/DDR4)</li>
+        <li><strong>BL16</strong>: 16 transfers (DDR5)</li>
+      </ul>
+      <p>At DDR4-3200, a BL8 burst transfers 8 × 64 bits = 64 bytes (one CPU cache line) in 4 clock cycles (8 transfers at 2 per clock).</p>
+
+      <h3>Auto Precharge</h3>
+      <p>A READ with the <strong>AP bit</strong> set automatically precharges the bank after the burst completes. This is useful for random-access patterns where the next access will be to a different row — it eliminates the need for a separate PRE command.</p>
+
+      <h2 id="write">WRITE</h2>
+      <p>The WRITE command works similarly to READ but in reverse: column-addressed cells in the row buffer are overwritten with the data driven on the DQ pins by the controller. The written values are also stored back to the capacitors as long as the row remains active.</p>
+
+      <div class="info-box note">
+        <strong>Write Latency</strong>
+        Unlike reads (which have CAS latency before data appears), writes have a <strong>write latency (WL)</strong> that is typically CL − 1 for DDR3 and programmable for DDR4/DDR5. Data must be driven exactly at the right time relative to the WRITE command.
+      </div>
+
+      <h2 id="refresh">REFRESH (REF)</h2>
+      <p>Because DRAM cells lose charge over time (see Module 01), the memory controller must periodically issue <strong>REFRESH</strong> commands to restore all cells before they decay below the readable threshold.</p>
+
+      <h3>Refresh Mechanics</h3>
+      <ul>
+        <li>A REF command causes the DRAM to internally activate and precharge one or more rows</li>
+        <li>The DRAM's internal refresh counter tracks which rows need refreshing next</li>
+        <li>All banks must be precharged before a REF command is accepted</li>
+        <li>During refresh, the DRAM is unavailable for reads/writes — this is the <strong>refresh penalty</strong></li>
+      </ul>
+
+      <h3>tREFI and tRFC</h3>
+      <table>
+        <thead><tr><th>Parameter</th><th>Meaning</th><th>Typical Value (DDR4, 85°C)</th></tr></thead>
+        <tbody>
+          <tr><td><code>tREFI</code></td><td>Average Refresh Interval — how often a REF must be issued</td><td>3.9 µs</td></tr>
+          <tr><td><code>tRFC</code></td><td>Refresh Cycle Time — how long the DRAM is busy after a REF command</td><td>260–550 ns (density dependent)</td></tr>
+          <tr><td><code>tREFI (normal temp)</code></td><td>Same, but at ≤85°C</td><td>7.8 µs</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Refresh Modes</h3>
+      <ul>
+        <li><strong>Auto-Refresh (AR):</strong> Controller issues REF commands at tREFI intervals; DRAM manages row selection internally</li>
+        <li><strong>Self-Refresh (SR):</strong> DRAM manages its own refresh internally — used during power-down (e.g., DRAM sleep on phones). The controller asserts CKE low to enter self-refresh</li>
+        <li><strong>Same Bank Refresh (SBR, DDR5):</strong> Refreshes one bank at a time, leaving others accessible — dramatically reduces refresh impact on latency</li>
+      </ul>
+
+      <h2 id="power-down">Power-Down States</h2>
+      <p>DRAM supports multiple low-power states to reduce idle power consumption:</p>
+
+      <table>
+        <thead><tr><th>State</th><th>CKE</th><th>Description</th><th>Exit Latency</th></tr></thead>
+        <tbody>
+          <tr><td>Active Power-Down</td><td>Low (row open)</td><td>Row remains open; clock stops; fastest wake</td><td>~tXP (3–6 ns)</td></tr>
+          <tr><td>Precharge Power-Down</td><td>Low (idle)</td><td>All banks precharged; clock stops</td><td>~tXP</td></tr>
+          <tr><td>Self-Refresh</td><td>Low + SRE</td><td>DRAM manages own refresh; lowest power; slowest wake</td><td>~tXSR (200+ ns)</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="full-sequence">Full Read Sequence Example</h2>
+      <p>Here is a complete example of reading a cache line from a closed (precharged) bank:</p>
+
+      <div class="diagram">
+        <div class="diagram-title">Read from Closed Bank — Command Sequence</div>
+        <div style="font-family:var(--mono); font-size:0.78rem; display:flex; flex-direction:column; gap:4px; max-width:560px;">
+          <div style="display:flex; align-items:stretch; gap:0;">
+            <div style="width:90px; padding:8px; border:1px solid var(--border); background:var(--bg-card2); color:var(--text-muted); font-size:0.7rem; display:flex; align-items:center;">Command</div>
+            <div style="flex:1; padding:8px; border:1px solid var(--border); background:rgba(59,130,246,0.15); color:var(--accent); font-weight:700;">ACT (row addr)</div>
+          </div>
+          <div style="padding-left:90px; color:var(--text-muted); font-size:0.7rem;">↕ wait tRCD</div>
+          <div style="display:flex; align-items:stretch; gap:0;">
+            <div style="width:90px; padding:8px; border:1px solid var(--border); background:var(--bg-card2); color:var(--text-muted); font-size:0.7rem; display:flex; align-items:center;">Command</div>
+            <div style="flex:1; padding:8px; border:1px solid var(--border); background:rgba(16,185,129,0.12); color:#6ee7b7; font-weight:700;">READ (col addr, BL8)</div>
+          </div>
+          <div style="padding-left:90px; color:var(--text-muted); font-size:0.7rem;">↕ wait CL clocks</div>
+          <div style="display:flex; align-items:stretch; gap:0;">
+            <div style="width:90px; padding:8px; border:1px solid var(--border); background:var(--bg-card2); color:var(--text-muted); font-size:0.7rem; display:flex; align-items:center;">DQ bus</div>
+            <div style="flex:1; padding:8px; border:1px solid var(--border); background:rgba(16,185,129,0.2); color:#34d399; font-weight:700;">D0 D1 D2 D3 D4 D5 D6 D7 (8 transfers = 64 bytes)</div>
+          </div>
+          <div style="padding-left:90px; color:var(--text-muted); font-size:0.7rem;">↕ wait tRAS − tRCD − BL/2</div>
+          <div style="display:flex; align-items:stretch; gap:0;">
+            <div style="width:90px; padding:8px; border:1px solid var(--border); background:var(--bg-card2); color:var(--text-muted); font-size:0.7rem; display:flex; align-items:center;">Command</div>
+            <div style="flex:1; padding:8px; border:1px solid var(--border); background:rgba(245,158,11,0.1); color:#fcd34d; font-weight:700;">PRE (or auto-precharge)</div>
+          </div>
+          <div style="margin-top:8px; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg-card2); color:var(--text-muted); font-size:0.72rem;">
+            Total latency ≈ tRCD + CL ≈ 14 + 16 = 30 ns at DDR4-3200 CL16
+          </div>
+        </div>
+      </div>
+
+      <h2 id="command-encoding">Command Encoding</h2>
+      <p>DRAM commands are encoded on the CA (Command/Address) bus using combinations of the <code>RAS#</code>, <code>CAS#</code>, <code>WE#</code>, and <code>CS#</code> pins. In DDR4 and DDR5, the CA bus carries multiple bits per clock cycle.</p>
+
+      <table>
+        <thead><tr><th>Command</th><th>DDR4 Encoding (simplified)</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>ACTIVATE</td><td>RAS#=L, CAS#=H, WE#=H</td><td>+ row address on A[16:0]</td></tr>
+          <tr><td>READ</td><td>RAS#=H, CAS#=L, WE#=H</td><td>+ col address on A[9:0], A10=AP bit</td></tr>
+          <tr><td>WRITE</td><td>RAS#=H, CAS#=L, WE#=L</td><td>+ col address, A10=AP bit</td></tr>
+          <tr><td>PRECHARGE</td><td>RAS#=L, CAS#=H, WE#=L</td><td>A10=H → precharge all banks</td></tr>
+          <tr><td>REFRESH</td><td>RAS#=L, CAS#=L, WE#=H</td><td>All banks must be idle</td></tr>
+          <tr><td>NOP</td><td>CS#=H or RAS#=H,CAS#=H,WE#=H</td><td>No operation; fills timing gaps</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box tip">
+        <strong>DDR5 Command Changes</strong>
+        DDR5 uses a <strong>14-bit CA bus</strong> clocked at the full data rate, and many commands have been reorganized. The separate RAS#/CAS#/WE# encoding is replaced by a unified command field, making the protocol more extensible for future features.
+      </div>
+
+      <div class="page-nav">
+        <a href="types.html" class="prev">DRAM Types</a>
+        <a href="timing.html" class="next">Timing</a>
+      </div>
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-bottom"><span>&copy; 2026 DRAM University. Open educational content.</span></div>
+  </footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

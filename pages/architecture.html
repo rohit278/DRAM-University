@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture — DRAM University</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">DRAM<span>University</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links">
+        <li><a href="basics.html">Basics</a></li>
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="types.html">DRAM Types</a></li>
+        <li><a href="operations.html">Operations</a></li>
+        <li><a href="timing.html">Timing</a></li>
+        <li><a href="advanced.html">Advanced</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../index.html">Home</a> › Module 02</div>
+      <div class="module-badge">Module 02 — Architecture</div>
+      <h1>DRAM Architecture</h1>
+      <p>How billions of 1T1C cells are organized into arrays, subarrays, banks, ranks, and channels — and how the memory controller orchestrates access to all of it.</p>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <aside class="toc">
+      <h4>On This Page</h4>
+      <ul class="toc-list">
+        <li><a href="#cell-array">Cell Array</a></li>
+        <li><a href="#sense-amplifiers">Sense Amplifiers</a></li>
+        <li><a href="#subarrays">Subarrays & Mats</a></li>
+        <li><a href="#banks">Banks</a></li>
+        <li><a href="#ranks-channels">Ranks & Channels</a></li>
+        <li><a href="#address-mapping">Address Mapping</a></li>
+        <li><a href="#memory-controller">Memory Controller</a></li>
+        <li><a href="#key-terms">Key Terms</a></li>
+      </ul>
+    </aside>
+
+    <article class="prose">
+
+      <h2 id="cell-array">Cell Array</h2>
+      <p>Individual 1T1C cells are arranged into a two-dimensional <strong>cell array</strong> — a grid of rows and columns. Each row is connected by a <strong>Word Line (WL)</strong> and each column by a pair of <strong>Bit Lines (BL / BL̄)</strong> in a differential configuration.</p>
+      <p>A typical DRAM array might have <strong>32,768 rows × 1,024 columns</strong>. Activating a single word line exposes an entire row of data — up to 8 KB — to the sense amplifiers simultaneously. This row is called the <strong>open row</strong> or <strong>active row</strong>.</p>
+
+      <div class="diagram">
+        <div class="diagram-title">Simplified Cell Array (4×4 excerpt)</div>
+        <div style="font-family:var(--mono); font-size:0.78rem; overflow-x:auto;">
+          <table style="border-collapse:collapse; min-width:420px;">
+            <thead>
+              <tr>
+                <th style="border:1px solid var(--border); padding:8px; background:var(--bg-card2); color:var(--text-muted);">WL\BL</th>
+                <th style="border:1px solid var(--border); padding:8px; background:var(--bg-card2); color:var(--accent2);">BL0/BL̄0</th>
+                <th style="border:1px solid var(--border); padding:8px; background:var(--bg-card2); color:var(--accent2);">BL1/BL̄1</th>
+                <th style="border:1px solid var(--border); padding:8px; background:var(--bg-card2); color:var(--accent2);">BL2/BL̄2</th>
+                <th style="border:1px solid var(--border); padding:8px; background:var(--bg-card2); color:var(--accent2);">BL3/BL̄3</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--accent); background:var(--bg-card2);">WL0</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--accent); background:var(--bg-card2);">WL1</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+              </tr>
+              <tr style="background:rgba(59,130,246,0.08);">
+                <td style="border:1px solid rgba(59,130,246,0.4); padding:8px; color:var(--accent); font-weight:700; background:rgba(59,130,246,0.15);">WL2 ←active</td>
+                <td style="border:1px solid rgba(59,130,246,0.4); padding:8px; color:var(--text); text-align:center; font-weight:600;">1T1C</td>
+                <td style="border:1px solid rgba(59,130,246,0.4); padding:8px; color:var(--text); text-align:center; font-weight:600;">1T1C</td>
+                <td style="border:1px solid rgba(59,130,246,0.4); padding:8px; color:var(--text); text-align:center; font-weight:600;">1T1C</td>
+                <td style="border:1px solid rgba(59,130,246,0.4); padding:8px; color:var(--text); text-align:center; font-weight:600;">1T1C</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--accent); background:var(--bg-card2);">WL3</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+                <td style="border:1px solid var(--border); padding:8px; color:var(--text-dim); text-align:center;">1T1C</td>
+              </tr>
+              <tr>
+                <td colspan="5" style="padding:8px; border:1px solid var(--border);">
+                  <div style="display:flex; gap:4px; justify-content:flex-end;">
+                    <div style="flex:1; height:20px; background:rgba(6,182,212,0.2); border-radius:3px; display:flex; align-items:center; justify-content:center; color:var(--accent2); font-size:0.7rem;">SA</div>
+                    <div style="flex:1; height:20px; background:rgba(6,182,212,0.2); border-radius:3px; display:flex; align-items:center; justify-content:center; color:var(--accent2); font-size:0.7rem;">SA</div>
+                    <div style="flex:1; height:20px; background:rgba(6,182,212,0.2); border-radius:3px; display:flex; align-items:center; justify-content:center; color:var(--accent2); font-size:0.7rem;">SA</div>
+                    <div style="flex:1; height:20px; background:rgba(6,182,212,0.2); border-radius:3px; display:flex; align-items:center; justify-content:center; color:var(--accent2); font-size:0.7rem;">SA</div>
+                  </div>
+                  <div style="text-align:center; color:var(--text-muted); margin-top:4px; font-size:0.72rem;">Sense Amplifiers (SA)</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h2 id="sense-amplifiers">Sense Amplifiers</h2>
+      <p>When a word line is activated, the tiny charge from each cell flows onto its bit line, causing a minuscule voltage change — typically just <strong>50–100 mV</strong>. A <strong>sense amplifier (SA)</strong> sits at the end of each bit line pair and detects this differential voltage, then amplifies it to full VDD/GND swing.</p>
+
+      <h3>How a Sense Amplifier Works</h3>
+      <p>A standard DRAM sense amplifier is a <strong>cross-coupled CMOS latch</strong>:</p>
+      <ol>
+        <li><strong>Precharge phase:</strong> Both BL and BL̄ are precharged to VDD/2 (equalized)</li>
+        <li><strong>Access phase:</strong> WL activates; the cell's capacitor shares charge with BL. One side rises slightly, the other falls</li>
+        <li><strong>Sense phase:</strong> The SA is enabled. The latch regenerates: the higher side is driven to VDD, the lower to GND</li>
+        <li><strong>Restore phase:</strong> The amplified voltage on BL writes back to the capacitor, restoring its charge (destructive read!)</li>
+      </ol>
+
+      <div class="info-box warn">
+        <strong>Destructive Read</strong>
+        DRAM reads are destructive — activating a row partially discharges every cell in that row. The sense amplifier restore step is mandatory. If power is cut mid-sense, data is lost.
+      </div>
+
+      <h2 id="subarrays">Subarrays & Mats</h2>
+      <p>A full DRAM array with 32K rows and 1K columns would have extremely long bit lines. Long bit lines have high capacitance, which slows sensing and increases power. Instead, modern DRAM divides the array into <strong>subarrays</strong> (also called <strong>mats</strong>), each with its own local sense amplifiers.</p>
+      <p>A typical DRAM chip might have <strong>128–512 subarrays per bank</strong>, each with ~512 rows and ~512 columns. Subarrays in the same bank share row and column decoders but have independent sense amplifiers.</p>
+
+      <h2 id="banks">Banks</h2>
+      <p>A <strong>bank</strong> is an independently operable section of DRAM. Each bank has its own:</p>
+      <ul>
+        <li>Row address decoder</li>
+        <li>Column address decoder</li>
+        <li>Sense amplifier array (row buffer)</li>
+        <li>Precharge and refresh logic</li>
+      </ul>
+      <p>Banks share the external data bus (DQ pins) but can operate their internal pipelines concurrently. This parallelism is exploited by memory controllers to hide latency: while one bank is precharging, another can be activated and read.</p>
+
+      <div class="diagram">
+        <div class="diagram-title">DRAM Die — Banks, Row Buffer, I/O</div>
+        <div style="font-family:var(--mono); font-size:0.8rem; display:flex; flex-direction:column; gap:6px; max-width:500px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:4px;">
+            <div style="background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:6px; padding:12px 6px; text-align:center; color:var(--accent2);">BG0<br/>Bank0</div>
+            <div style="background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:6px; padding:12px 6px; text-align:center; color:var(--accent2);">BG0<br/>Bank1</div>
+            <div style="background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); border-radius:6px; padding:12px 6px; text-align:center; color:#c4b5fd;">BG1<br/>Bank0</div>
+            <div style="background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); border-radius:6px; padding:12px 6px; text-align:center; color:#c4b5fd;">BG1<br/>Bank1</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:4px;">
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:8px 6px; text-align:center; color:#6ee7b7; font-size:0.7rem;">Row Buffer</div>
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:8px 6px; text-align:center; color:#6ee7b7; font-size:0.7rem;">Row Buffer</div>
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:8px 6px; text-align:center; color:#6ee7b7; font-size:0.7rem;">Row Buffer</div>
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:8px 6px; text-align:center; color:#6ee7b7; font-size:0.7rem;">Row Buffer</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:6px; padding:10px; text-align:center; color:#fcd34d;">I/O Logic &amp; DQ Interface</div>
+        </div>
+      </div>
+
+      <h3>Bank Groups (DDR4/DDR5)</h3>
+      <p>DDR4 introduced <strong>bank groups</strong>: banks are clustered into groups (typically 2 or 4), each with its own data path and I/O circuitry. A back-to-back CAS command to <em>different</em> bank groups can be issued with much shorter delay (tCCD_S) than to the same bank group (tCCD_L). This enables the controller to sustain very high throughput by interleaving across bank groups.</p>
+
+      <table>
+        <thead><tr><th>Generation</th><th>Banks</th><th>Bank Groups</th><th>Banks per Group</th></tr></thead>
+        <tbody>
+          <tr><td>DDR3</td><td>8</td><td>—</td><td>—</td></tr>
+          <tr><td>DDR4</td><td>16</td><td>4</td><td>4</td></tr>
+          <tr><td>DDR5</td><td>32</td><td>8</td><td>4</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="ranks-channels">Ranks & Channels</h2>
+
+      <h3>Ranks</h3>
+      <p>A <strong>rank</strong> is a set of DRAM chips that are selected together and respond simultaneously to a single command. All chips in a rank share the same chip-select (CS) signal. On a typical DDR4 DIMM with x8 chips and a 64-bit bus, you need 8 chips to form one rank (8 chips × 8 bits = 64 bits).</p>
+      <p>A dual-rank DIMM has two independent sets of chips that alternate access. The memory controller interleaves between ranks to hide precharge latency.</p>
+
+      <h3>Channels</h3>
+      <p>A <strong>memory channel</strong> is a complete, independent electrical interface between the CPU's memory controller and one or more DIMMs. Each channel has its own:</p>
+      <ul>
+        <li>64-bit data bus (DQ[63:0])</li>
+        <li>Command/address bus</li>
+        <li>Clock signals</li>
+      </ul>
+      <p>Modern desktop CPUs have 2 channels; high-end desktop (HEDT) and server CPUs may have 4, 6, 8, or even 12 channels. Each additional channel multiplies peak memory bandwidth proportionally.</p>
+
+      <div class="diagram">
+        <div class="diagram-title">2-Channel Memory System</div>
+        <div style="font-family:var(--mono); font-size:0.78rem; display:flex; flex-direction:column; gap:8px; max-width:520px;">
+          <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:8px; padding:12px; text-align:center; color:var(--accent);">CPU — Integrated Memory Controller (IMC)</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+              <div style="color:var(--text-muted); font-size:0.7rem;">Channel A — 64-bit bus</div>
+              <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:10px; text-align:center; color:#6ee7b7; width:100%;">DIMM A0<br/><span style="font-size:0.7rem; color:var(--text-muted);">Rank 0 + Rank 1</span></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+              <div style="color:var(--text-muted); font-size:0.7rem;">Channel B — 64-bit bus</div>
+              <div style="background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); border-radius:6px; padding:10px; text-align:center; color:#c4b5fd; width:100%;">DIMM B0<br/><span style="font-size:0.7rem; color:var(--text-muted);">Rank 0 + Rank 1</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="address-mapping">Address Mapping</h2>
+      <p>A physical memory address issued by the CPU must be decoded into: <strong>channel → rank → bank group → bank → row → column</strong>. The exact mapping varies by memory controller implementation and can be tuned for performance.</p>
+      <p><strong>Row interleaving</strong> (spreading consecutive addresses across different banks) maximizes bank-level parallelism. <strong>Cache-line interleaving</strong> keeps a CPU cache line within one bank, which can improve row-buffer hit rates for streaming workloads.</p>
+
+      <div class="info-box note">
+        <strong>Row Buffer Policy</strong>
+        Memory controllers choose between <em>open-page</em> (leave row active for future hits), <em>closed-page</em> (precharge immediately after access), and adaptive policies. Open-page wins for streaming; closed-page wins for random access.
+      </div>
+
+      <h2 id="memory-controller">Memory Controller</h2>
+      <p>The <strong>memory controller</strong> (integrated into the CPU die on all modern processors since ~2010) is responsible for:</p>
+      <ul>
+        <li>Accepting read/write requests from the CPU cache hierarchy</li>
+        <li>Translating physical addresses to DRAM coordinates</li>
+        <li>Scheduling DRAM commands (ACT, CAS, PRE) to maximize bandwidth and minimize latency</li>
+        <li>Issuing periodic refresh commands</li>
+        <li>Managing power-down states during idle periods</li>
+        <li>Implementing ECC error detection and correction (on ECC systems)</li>
+      </ul>
+
+      <h3>Command Scheduling</h3>
+      <p>Modern controllers use sophisticated <strong>out-of-order scheduling</strong>: incoming requests are reordered to exploit row-buffer hits, bank parallelism, and bus turnaround efficiency. A simple FCFS (First-Come, First-Served) scheduler leaves substantial bandwidth on the table.</p>
+
+      <h2 id="key-terms">Key Terms</h2>
+      <table>
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><code>Row Buffer</code></td><td>The sense amplifier array that holds the currently active row — acts as a fast cache for that row</td></tr>
+          <tr><td><code>Row Buffer Hit</code></td><td>Access to a column in the currently open row — fastest case (~CAS latency only)</td></tr>
+          <tr><td><code>Row Buffer Miss</code></td><td>Target row is in a closed bank — requires ACT before CAS</td></tr>
+          <tr><td><code>Row Buffer Conflict</code></td><td>Target row differs from the currently open row — requires PRE + ACT + CAS (slowest)</td></tr>
+          <tr><td><code>Bank Group</code></td><td>A cluster of banks sharing data path circuitry (DDR4+)</td></tr>
+          <tr><td><code>Rank</code></td><td>A set of DRAM chips addressed simultaneously on a single CS signal</td></tr>
+          <tr><td><code>Channel</code></td><td>An independent 64-bit electrical interface between CPU and DRAM</td></tr>
+          <tr><td><code>IMC</code></td><td>Integrated Memory Controller — on-die memory controller in modern CPUs</td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="basics.html" class="prev">Basics</a>
+        <a href="types.html" class="next">DRAM Types</a>
+      </div>
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-bottom"><span>&copy; 2026 DRAM University. Open educational content.</span></div>
+  </footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DRAM Basics — DRAM University</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">DRAM<span>University</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links">
+        <li><a href="basics.html" class="active">Basics</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="types.html">DRAM Types</a></li>
+        <li><a href="operations.html">Operations</a></li>
+        <li><a href="timing.html">Timing</a></li>
+        <li><a href="advanced.html">Advanced</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../index.html">Home</a> › Module 01</div>
+      <div class="module-badge">Module 01 — DRAM Basics</div>
+      <h1>What Is DRAM?</h1>
+      <p>From a single capacitor to a multi-gigabyte DIMM — the physics, history, and core concepts behind Dynamic Random-Access Memory.</p>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <aside class="toc">
+      <h4>On This Page</h4>
+      <ul class="toc-list">
+        <li><a href="#what-is-dram">What Is DRAM?</a></li>
+        <li><a href="#the-cell">The 1T1C Cell</a></li>
+        <li><a href="#dynamic">Why "Dynamic"?</a></li>
+        <li><a href="#history">History & Evolution</a></li>
+        <li><a href="#comparison">DRAM vs. SRAM vs. Flash</a></li>
+        <li><a href="#the-stack">Where DRAM Fits in the Memory Stack</a></li>
+        <li><a href="#key-terms">Key Terms</a></li>
+      </ul>
+    </aside>
+
+    <article class="prose">
+
+      <h2 id="what-is-dram">What Is DRAM?</h2>
+      <p><strong>Dynamic Random-Access Memory (DRAM)</strong> is the primary form of working memory in virtually every modern computing device — from smartphones to supercomputers. When your operating system loads, when you open a browser, when a GPU renders a frame — the data lives in DRAM.</p>
+      <p>DRAM is <em>random-access</em>, meaning any memory location can be read or written in approximately the same amount of time, regardless of where it is in the array. This distinguishes it from sequential-access storage like tape or even some flash configurations.</p>
+      <p>DRAM is also <em>volatile</em>: it loses all stored data the moment power is removed. This is an inherent consequence of how it stores bits — in tiny capacitors that discharge over time.</p>
+
+      <div class="info-box note">
+        <strong>Key Fact</strong>
+        Modern DDR5 DIMMs can hold 64 GB on a single module and transfer data at over 51 GB/s — yet every bit is still stored using the same fundamental 1-transistor, 1-capacitor cell concept invented in 1968.
+      </div>
+
+      <h2 id="the-cell">The 1T1C Cell</h2>
+      <p>The fundamental storage element in DRAM is the <strong>1T1C cell</strong> — one transistor and one capacitor. It is arguably the simplest possible memory cell, and that simplicity is why DRAM achieves such extraordinary storage density.</p>
+
+      <div class="diagram">
+        <div class="diagram-title">DRAM 1T1C Cell — Logical View</div>
+        <div style="display:flex; flex-direction:column; gap:16px; font-family:var(--mono); font-size:0.82rem;">
+          <div style="display:flex; align-items:center; gap:0;">
+            <div style="text-align:center; padding:4px 8px; color:var(--text-muted);">Word Line (WL) ──────────────┐</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="color:var(--text-muted); width:100px; text-align:right;">Bit Line (BL) ─┤</div>
+            <div class="cell-part cell-transistor" style="min-width:110px;">
+              <span>MOSFET</span>
+              <span class="label">Access Transistor</span>
+            </div>
+            <div style="color:var(--text-muted);">──</div>
+            <div class="cell-part cell-cap" style="min-width:110px;">
+              <span>⏚ C<sub>s</sub></span>
+              <span class="label">Storage Capacitor</span>
+            </div>
+            <div style="color:var(--text-muted);">─ GND</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>The Transistor (Access Switch)</h3>
+      <p>The <strong>MOSFET transistor</strong> acts as a gating switch. Its gate is connected to the <strong>Word Line (WL)</strong>. When the word line is driven high, the transistor turns on, connecting the storage capacitor to the <strong>Bit Line (BL)</strong>. When the word line goes low, the transistor cuts off, isolating the capacitor.</p>
+
+      <h3>The Capacitor (Storage Element)</h3>
+      <p>The <strong>storage capacitor C<sub>s</sub></strong> holds charge to represent a binary value:</p>
+      <ul>
+        <li><strong>Logic 1</strong> — capacitor is charged (holds approximately V<sub>DD</sub>/2 to V<sub>DD</sub>)</li>
+        <li><strong>Logic 0</strong> — capacitor is discharged (holds approximately 0 V)</li>
+      </ul>
+      <p>Modern DRAM capacitors are extraordinarily small — on the order of 10–30 fF (femtofarads) — yet they must store enough charge to be reliably detected by sense amplifiers. This has driven decades of innovation in capacitor geometry: trench capacitors etched deep into the silicon substrate, and later stacked capacitors that grow upward above the cell.</p>
+
+      <h2 id="dynamic">Why "Dynamic"?</h2>
+      <p>The word <em>dynamic</em> is the key differentiator. Unlike SRAM (which uses cross-coupled inverters to hold state indefinitely), a DRAM cell's capacitor leaks charge due to:</p>
+      <ul>
+        <li><strong>Subthreshold leakage</strong> through the off transistor</li>
+        <li><strong>Junction leakage</strong> at the capacitor's diffusion contacts</li>
+        <li><strong>Dielectric leakage</strong> through the capacitor oxide</li>
+      </ul>
+      <p>A charged DRAM cell will completely discharge in roughly <strong>32–64 milliseconds</strong> at room temperature (faster at elevated temperatures). The memory controller must therefore periodically <strong>refresh</strong> every cell — read it and write it back — before its charge decays below the detectable threshold.</p>
+
+      <div class="info-box warn">
+        <strong>Refresh Overhead</strong>
+        Refresh operations consume memory bus bandwidth and add latency. For DDR4 at 85°C, the refresh interval (tREFI) is 3.9 µs — meaning the controller issues a refresh command every 3.9 µs. This isn't free: it reduces effective bandwidth by roughly 1–3%.
+      </div>
+
+      <h2 id="history">History & Evolution</h2>
+      <p>DRAM has one of the longest and most consequential histories of any semiconductor component.</p>
+
+      <table>
+        <thead>
+          <tr><th>Year</th><th>Milestone</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1966</td><td>Robert Dennard (IBM) invents the 1T1C DRAM cell concept</td></tr>
+          <tr><td>1970</td><td>Intel 1103 — first commercially available DRAM chip (1 Kbit)</td></tr>
+          <tr><td>1973</td><td>4 Kbit DRAM; MOS process displaces core memory in computers</td></tr>
+          <tr><td>1980s</td><td>DRAM density doubles roughly every 2–3 years; 64 Kbit → 4 Mbit</td></tr>
+          <tr><td>1993</td><td>Samsung introduces synchronous DRAM (SDRAM) — clocked interface</td></tr>
+          <tr><td>2000</td><td>DDR SDRAM — doubles bandwidth per clock via double data rate</td></tr>
+          <tr><td>2003</td><td>DDR2 — reduced voltage (1.8 V), higher clock speeds</td></tr>
+          <tr><td>2007</td><td>DDR3 — 1.5 V, up to 2133 MT/s</td></tr>
+          <tr><td>2012</td><td>DDR4 — 1.2 V, up to 3200 MT/s, bank groups introduced</td></tr>
+          <tr><td>2015</td><td>HBM1 — 3D-stacked DRAM on package (AMD Fury)</td></tr>
+          <tr><td>2021</td><td>DDR5 — 1.1 V, 4800–8400+ MT/s, on-die ECC, 32 Gbit density</td></tr>
+          <tr><td>2022</td><td>HBM3 — 819 GB/s per stack; LPDDR5X at 8533 MT/s</td></tr>
+          <tr><td>2024+</td><td>HBM3E, LPDDR6, DDR5 at 12800 MT/s on the roadmap</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box tip">
+        <strong>Dennard Scaling</strong>
+        Robert Dennard (same inventor as DRAM) also described "Dennard scaling" — the observation that as transistors shrink, power density stays constant. This scaling ended around 2006, which is why clock speeds plateaued and the industry shifted to multi-core processors and specialized memory like HBM.
+      </div>
+
+      <h2 id="comparison">DRAM vs. SRAM vs. Flash</h2>
+      <p>DRAM doesn't exist in isolation. Understanding its trade-offs against SRAM (used in CPU caches) and Flash (used in SSDs) clarifies why the memory hierarchy exists.</p>
+
+      <table>
+        <thead>
+          <tr><th>Property</th><th>DRAM</th><th>SRAM</th><th>NAND Flash</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Transistors per bit</td><td>1</td><td>6</td><td>~1 (shared)</td></tr>
+          <tr><td>Density</td><td>Very High</td><td>Low</td><td>Extremely High</td></tr>
+          <tr><td>Speed (read latency)</td><td>~50–100 ns</td><td>~0.5–5 ns</td><td>~25–100 µs</td></tr>
+          <tr><td>Volatile?</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+          <tr><td>Requires refresh?</td><td>Yes</td><td>No</td><td>No (but needs wear leveling)</td></tr>
+          <tr><td>Cost per GB (approx)</td><td>~$3–8</td><td>~$1000+</td><td>~$0.05–0.15</td></tr>
+          <tr><td>Typical use</td><td>Main memory (RAM)</td><td>CPU caches (L1/L2/L3)</td><td>SSD storage</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="the-stack">Where DRAM Fits in the Memory Stack</h2>
+      <p>Modern systems use a <strong>memory hierarchy</strong> because no single technology simultaneously offers the speed of SRAM and the density of Flash. DRAM occupies the critical middle tier:</p>
+
+      <div class="diagram">
+        <div class="diagram-title">Memory Hierarchy (latency increases downward)</div>
+        <div style="display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:0.82rem; max-width:480px;">
+          <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:10px 16px; color:#fca5a5;">CPU Registers — ~0.1 ns · bytes</div>
+          <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:6px; padding:10px 16px; color:#fcd34d; margin-left:16px;">L1 Cache (SRAM) — ~0.5 ns · 32–64 KB</div>
+          <div style="background:rgba(245,158,11,0.09); border:1px solid rgba(245,158,11,0.25); border-radius:6px; padding:10px 16px; color:#fde68a; margin-left:32px;">L2 Cache (SRAM) — ~5 ns · 256 KB–4 MB</div>
+          <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.2); border-radius:6px; padding:10px 16px; color:#fef3c7; margin-left:48px;">L3 Cache (SRAM) — ~30 ns · 8–64 MB</div>
+          <div style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); border-radius:6px; padding:10px 16px; color:#93c5fd; margin-left:64px; font-weight:600;">DRAM (Main Memory) — ~60–100 ns · GB–TB</div>
+          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:10px 16px; color:#6ee7b7; margin-left:80px;">NVMe SSD (Flash) — ~20–100 µs · TB</div>
+          <div style="background:rgba(100,116,139,0.1); border:1px solid rgba(100,116,139,0.2); border-radius:6px; padding:10px 16px; color:#94a3b8; margin-left:96px;">HDD — ~5–15 ms · TB</div>
+        </div>
+      </div>
+
+      <h2 id="key-terms">Key Terms</h2>
+      <table>
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><code>1T1C</code></td><td>One Transistor, One Capacitor — the fundamental DRAM storage cell</td></tr>
+          <tr><td><code>Word Line (WL)</code></td><td>The wire that selects a row of cells by turning on their access transistors</td></tr>
+          <tr><td><code>Bit Line (BL)</code></td><td>The wire that carries charge to/from the cell during read and write</td></tr>
+          <tr><td><code>Refresh</code></td><td>Periodically re-charging all cells to prevent data loss due to leakage</td></tr>
+          <tr><td><code>tREFI</code></td><td>Refresh Interval — how often a refresh command must be issued per row</td></tr>
+          <tr><td><code>Volatile</code></td><td>Memory that loses all data when power is removed</td></tr>
+          <tr><td><code>Random Access</code></td><td>Any location can be accessed in approximately constant time</td></tr>
+          <tr><td><code>Sense Amplifier</code></td><td>Circuit that detects the tiny charge on a bit line and amplifies it to full logic levels</td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <span></span>
+        <a href="architecture.html" class="next">Architecture</a>
+      </div>
+
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-bottom">
+      <span>&copy; 2026 DRAM University. Open educational content.</span>
+    </div>
+  </footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

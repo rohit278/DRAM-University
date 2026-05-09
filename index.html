@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DRAM University — Master Memory Technology</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">DRAM<span>University</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links">
+        <li><a href="pages/basics.html">Basics</a></li>
+        <li><a href="pages/architecture.html">Architecture</a></li>
+        <li><a href="pages/types.html">DRAM Types</a></li>
+        <li><a href="pages/operations.html">Operations</a></li>
+        <li><a href="pages/timing.html">Timing</a></li>
+        <li><a href="pages/advanced.html">Advanced</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-content">
+      <div class="hero-badge">Open Courseware · Free Forever</div>
+      <h1>Master <span class="accent">DRAM</span> Memory Technology</h1>
+      <p class="hero-sub">From a single capacitor cell to HBM stacks and DDR5 — a complete, rigorous education in dynamic RAM covering physics, architecture, protocols, and design trade-offs.</p>
+      <div class="hero-cta">
+        <a href="pages/basics.html" class="btn btn-primary">Start Learning</a>
+        <a href="#curriculum" class="btn btn-outline">View Curriculum</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">6</span><span class="stat-label">Modules</span></div>
+        <div class="stat"><span class="stat-num">50+</span><span class="stat-label">Topics</span></div>
+        <div class="stat"><span class="stat-num">DDR5</span><span class="stat-label">Up to Date</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="chip-diagram">
+        <div class="chip-label">DRAM Die</div>
+        <div class="chip-body">
+          <div class="chip-row">
+            <div class="chip-block bank">Bank 0</div>
+            <div class="chip-block bank">Bank 1</div>
+          </div>
+          <div class="chip-row">
+            <div class="chip-block bank">Bank 2</div>
+            <div class="chip-block bank">Bank 3</div>
+          </div>
+          <div class="chip-block ctrl">Row/Col Address Decoder</div>
+          <div class="chip-block io">I/O Interface · DQ[63:0]</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="curriculum" id="curriculum">
+    <div class="container">
+      <h2 class="section-title">Curriculum</h2>
+      <p class="section-sub">Six rigorous modules, sequenced from fundamentals to cutting-edge technology.</p>
+      <div class="module-grid">
+
+        <a href="pages/basics.html" class="module-card">
+          <div class="module-num">01</div>
+          <div class="module-icon">&#9711;</div>
+          <h3>DRAM Basics</h3>
+          <p>What is DRAM? How does a capacitor store a bit? History from Dennard's patent to modern dies. Volatile vs. non-volatile memory.</p>
+          <ul class="module-topics">
+            <li>The DRAM cell: 1T1C</li>
+            <li>Charge storage & leakage</li>
+            <li>History & evolution</li>
+            <li>DRAM vs. SRAM vs. Flash</li>
+          </ul>
+          <span class="module-link">Begin Module →</span>
+        </a>
+
+        <a href="pages/architecture.html" class="module-card">
+          <div class="module-num">02</div>
+          <div class="module-icon">&#9632;</div>
+          <h3>Architecture</h3>
+          <p>How billions of cells are organized into rows, columns, banks, and ranks — and how a memory controller navigates all of it.</p>
+          <ul class="module-topics">
+            <li>Cell arrays & subarrays</li>
+            <li>Sense amplifiers</li>
+            <li>Banks, ranks & channels</li>
+            <li>Memory controller overview</li>
+          </ul>
+          <span class="module-link">Begin Module →</span>
+        </a>
+
+        <a href="pages/types.html" class="module-card">
+          <div class="module-num">03</div>
+          <div class="module-icon">&#9670;</div>
+          <h3>DRAM Types</h3>
+          <p>A guided tour through every major DRAM family: from plain SDRAM to DDR5, LPDDR5X, HBM3, and GDDR7.</p>
+          <ul class="module-topics">
+            <li>SDRAM → DDR → DDR5</li>
+            <li>LPDDR (mobile DRAM)</li>
+            <li>HBM (High Bandwidth Memory)</li>
+            <li>GDDR (graphics DRAM)</li>
+          </ul>
+          <span class="module-link">Begin Module →</span>
+        </a>
+
+        <a href="pages/operations.html" class="module-card">
+          <div class="module-num">04</div>
+          <div class="module-icon">&#9654;</div>
+          <h3>Operations</h3>
+          <p>Step-by-step walkthrough of every DRAM command: ACTIVATE, READ, WRITE, PRECHARGE, REFRESH, and more.</p>
+          <ul class="module-topics">
+            <li>Row activation</li>
+            <li>Read & write bursts</li>
+            <li>Precharge & idle states</li>
+            <li>Auto-refresh & self-refresh</li>
+          </ul>
+          <span class="module-link">Begin Module →</span>
+        </a>
+
+        <a href="pages/timing.html" class="module-card">
+          <div class="module-num">05</div>
+          <div class="module-icon">&#9201;</div>
+          <h3>Timing Parameters</h3>
+          <p>Decode the cryptic strings like "16-18-18-38" and understand why every nanosecond matters for latency and bandwidth.</p>
+          <ul class="module-topics">
+            <li>CAS Latency (CL)</li>
+            <li>tRCD, tRP, tRAS</li>
+            <li>Command rate & burst length</li>
+            <li>XMP / EXPO profiles</li>
+          </ul>
+          <span class="module-link">Begin Module →</span>
+        </a>
+
+        <a href="pages/advanced.html" class="module-card">
+          <div class="module-num">06</div>
+          <div class="module-icon">&#9881;</div>
+          <h3>Advanced Topics</h3>
+          <p>ECC memory, Rowhammer attacks, 3D stacking, near-memory computing, and what comes after DRAM.</p>
+          <ul class="module-topics">
+            <li>ECC & error correction</li>
+            <li>Rowhammer vulnerability</li>
+            <li>3D stacking & TSVs</li>
+            <li>CXL & the future</li>
+          </ul>
+          <span class="module-link">Begin Module →</span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="why-section">
+    <div class="container">
+      <h2 class="section-title">Why Study DRAM?</h2>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-icon">&#128202;</div>
+          <h4>Performance Engineering</h4>
+          <p>Cache misses that fall through to DRAM are the single biggest bottleneck in most modern software. Understanding DRAM lets you write code that respects memory latency and bandwidth limits.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon">&#128736;</div>
+          <h4>Hardware Design</h4>
+          <p>SoC, FPGA, and PCB designers must pick the right DRAM type, configure controllers, and meet signal-integrity requirements. This knowledge is prerequisite.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon">&#128274;</div>
+          <h4>Security Research</h4>
+          <p>Rowhammer and its descendants (TRRespass, Blacksmith, RowPress) are some of the most impactful hardware vulnerabilities of the last decade — all rooted in DRAM physics.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon">&#127760;</div>
+          <h4>Industry Relevance</h4>
+          <p>DRAM is a $100B+ market. Understanding its roadmap — DDR5, LPDDR5X, HBM3, CXL Memory — is essential for product, silicon, and systems roles at any major tech company.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="prereqs-section">
+    <div class="container prereqs-inner">
+      <h2 class="section-title">Prerequisites</h2>
+      <p>DRAM University is designed to be accessible. Here is what helps:</p>
+      <div class="prereq-grid">
+        <div class="prereq-item"><span class="check">&#10003;</span> Basic digital logic (AND, OR, flip-flop)</div>
+        <div class="prereq-item"><span class="check">&#10003;</span> High-school physics (charge, capacitance, voltage)</div>
+        <div class="prereq-item"><span class="check">&#10003;</span> Familiarity with binary and hexadecimal numbers</div>
+        <div class="prereq-item prereq-optional"><span class="optional">optional</span> Computer architecture course</div>
+        <div class="prereq-item prereq-optional"><span class="optional">optional</span> Semiconductor device fundamentals</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="nav-logo">DRAM<span>University</span></span>
+        <p>An open educational resource dedicated to DRAM memory technology.</p>
+      </div>
+      <div class="footer-nav">
+        <h5>Modules</h5>
+        <a href="pages/basics.html">Basics</a>
+        <a href="pages/architecture.html">Architecture</a>
+        <a href="pages/types.html">DRAM Types</a>
+        <a href="pages/operations.html">Operations</a>
+        <a href="pages/timing.html">Timing</a>
+        <a href="pages/advanced.html">Advanced</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 DRAM University. Open educational content.</span>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Topics — DRAM University</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">DRAM<span>University</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links">
+        <li><a href="basics.html">Basics</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="types.html">DRAM Types</a></li>
+        <li><a href="operations.html">Operations</a></li>
+        <li><a href="timing.html">Timing</a></li>
+        <li><a href="advanced.html" class="active">Advanced</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../index.html">Home</a> › Module 06</div>
+      <div class="module-badge">Module 06 — Advanced Topics</div>
+      <h1>Advanced DRAM Topics</h1>
+      <p>ECC, Rowhammer attacks, 3D stacking, near-memory computing, CXL memory expansion, and what comes after DRAM on the roadmap.</p>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <aside class="toc">
+      <h4>On This Page</h4>
+      <ul class="toc-list">
+        <li><a href="#ecc">ECC Memory</a></li>
+        <li><a href="#rowhammer">Rowhammer</a></li>
+        <li><a href="#3d-stacking">3D Stacking & TSVs</a></li>
+        <li><a href="#processing-in-memory">Processing-in-Memory</a></li>
+        <li><a href="#cxl">CXL Memory</a></li>
+        <li><a href="#reliability">Reliability & Failure Modes</a></li>
+        <li><a href="#future">Beyond DRAM</a></li>
+      </ul>
+    </aside>
+
+    <article class="prose">
+
+      <h2 id="ecc">ECC Memory</h2>
+      <p><strong>Error-Correcting Code (ECC) memory</strong> adds hardware circuitry to detect and correct bit errors — cosmic ray strikes, electrical noise, and alpha-particle events that can flip a stored bit from 0 to 1 or vice versa.</p>
+
+      <h3>How ECC Works</h3>
+      <p>Standard ECC uses a <strong>SECDED</strong> (Single Error Correct, Double Error Detect) code — specifically a Hamming code variant. For every 64 bits of data, 8 check bits are computed and stored, forming a 72-bit ECC word.</p>
+      <ul>
+        <li><strong>Single-bit errors:</strong> Detected and automatically corrected on every read</li>
+        <li><strong>Double-bit errors:</strong> Detected but not correctable — system logs an uncorrectable error (UCE)</li>
+        <li><strong>3+ bit errors:</strong> May go undetected</li>
+      </ul>
+
+      <div class="diagram">
+        <div class="diagram-title">ECC DIMM vs Standard DIMM</div>
+        <div style="font-family:var(--mono); font-size:0.8rem; display:flex; flex-direction:column; gap:12px; max-width:500px;">
+          <div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:6px;">Standard (non-ECC) — 64-bit data bus, 8 chips × 8-bit</div>
+            <div style="display:flex; gap:3px;">
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:6px;">ECC — 72-bit bus, 9 chips × 8-bit (extra chip = 8 check bits)</div>
+            <div style="display:flex; gap:3px;">
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:4px; text-align:center; color:var(--accent); font-size:0.7rem;">x8</div>
+              <div style="flex:1; padding:8px 4px; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); border-radius:4px; text-align:center; color:#34d399; font-size:0.7rem; font-weight:700;">ECC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>ECC Variants</h3>
+      <table>
+        <thead><tr><th>Type</th><th>Description</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td>SECDED ECC</td><td>1-bit correct, 2-bit detect via Hamming code</td><td>Standard server ECC DIMMs</td></tr>
+          <tr><td>Chipkill / x4 ECC</td><td>Survives complete failure of one x4 DRAM chip</td><td>High-reliability servers</td></tr>
+          <tr><td>On-Die ECC (ODECC)</td><td>Error correction within the DRAM die itself (DDR5, LPDDR5)</td><td>Consumer DDR5, mobile</td></tr>
+          <tr><td>SDDC (Single Device Data Correction)</td><td>Corrects all errors from a single x8 chip</td><td>Enterprise RDIMM</td></tr>
+          <tr><td>RDIMM / LRDIMM</td><td>Registered/Load-Reduced DIMMs with buffer chips for signal integrity at high ranks</td><td>Multi-rank server configs</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box tip">
+        <strong>DDR5 On-Die ECC</strong>
+        All DDR5 devices are required to implement on-die ECC. This corrects errors within the DRAM die before they reach the bus — but it is <em>not</em> a replacement for system-level ECC. ODECC errors are invisible to the memory controller and do not trigger OS-level error reporting.
+      </div>
+
+      <h2 id="rowhammer">Rowhammer</h2>
+      <p><strong>Rowhammer</strong> is a hardware vulnerability discovered by Kim et al. (CMU/Intel, 2014) where repeatedly accessing ("hammering") a DRAM row causes bit flips in <em>physically adjacent rows</em> — without ever directly accessing those rows.</p>
+
+      <h3>The Physics</h3>
+      <p>Every time a row is activated, the word line voltage toggles. This couples electromagnetic noise into adjacent bit lines. Over thousands of activations, the disturbance charge accumulates in nearby cells, eventually flipping bits stored there. Modern DRAM is especially vulnerable because cells are packed closer together at each process node.</p>
+
+      <div class="diagram">
+        <div class="diagram-title">Rowhammer — Aggressor and Victim Rows</div>
+        <div style="font-family:var(--mono); font-size:0.78rem; display:flex; flex-direction:column; gap:3px; max-width:480px;">
+          <div style="padding:10px 16px; background:rgba(100,116,139,0.15); border:1px solid var(--border); border-radius:6px; color:var(--text-muted);">Row N-2 (safe)</div>
+          <div style="padding:10px 16px; background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.5); border-radius:6px; color:#fca5a5; font-weight:700;">Row N-1 — VICTIM ⚠ (bit flips here)</div>
+          <div style="padding:10px 16px; background:rgba(59,130,246,0.25); border:2px solid var(--accent); border-radius:6px; color:var(--accent); font-weight:700;">Row N — AGGRESSOR (hammered 10,000s of times)</div>
+          <div style="padding:10px 16px; background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.5); border-radius:6px; color:#fca5a5; font-weight:700;">Row N+1 — VICTIM ⚠ (bit flips here)</div>
+          <div style="padding:10px 16px; background:rgba(100,116,139,0.15); border:1px solid var(--border); border-radius:6px; color:var(--text-muted);">Row N+2 (safe)</div>
+        </div>
+      </div>
+
+      <h3>Security Impact</h3>
+      <p>Rowhammer can be exploited to escalate privileges, escape sandboxes, and break cryptographic isolation — all without any software vulnerability. Notable attacks include:</p>
+      <ul>
+        <li><strong>rowhammer.js (2016):</strong> Exploited from a browser using JavaScript (no native code required)</li>
+        <li><strong>Drammer (2016):</strong> Rowhammer privilege escalation on Android</li>
+        <li><strong>TRRespass (2020):</strong> Bypassed Target Row Refresh (TRR) mitigations via many-sided hammering</li>
+        <li><strong>Blacksmith (2021):</strong> Non-uniform hammer patterns that bypass all known TRR implementations</li>
+        <li><strong>RowPress (2023):</strong> Bit flips from keeping a row active for extended time — not just toggling</li>
+      </ul>
+
+      <h3>Mitigations</h3>
+      <table>
+        <thead><tr><th>Mitigation</th><th>How It Works</th><th>Effectiveness</th></tr></thead>
+        <tbody>
+          <tr><td>TRR (Target Row Refresh)</td><td>DRAM internally refreshes neighbors when a row is frequently activated</td><td>Bypassed by TRRespass/Blacksmith</td></tr>
+          <tr><td>PARA (Probabilistic Adjacent Row Activation)</td><td>Memory controller randomly refreshes neighbors after activations</td><td>Good; proposed in academic literature</td></tr>
+          <tr><td>pTRR / RFM (Refresh Management, DDR5)</td><td>DRAM signals controller when a row's activation count is high; controller issues targeted refreshes</td><td>Strong; mandated in DDR5</td></tr>
+          <tr><td>ECC</td><td>Corrects single-bit flips — but multi-bit rowhammer can overcome this</td><td>Partial</td></tr>
+          <tr><td>LPDDR5 DRFM</td><td>Directed Refresh Management — similar to DDR5 RFM for mobile</td><td>Strong</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box danger">
+        <strong>Still an Active Threat</strong>
+        As of 2026, Rowhammer and its descendants remain practically exploitable on many deployed systems. DDR5 with RFM provides the strongest mitigation to date, but older DDR4 systems remain exposed. Cloud providers and OS vendors continue to patch isolation boundaries.
+      </div>
+
+      <h2 id="3d-stacking">3D Stacking & Through-Silicon Vias</h2>
+      <p>HBM (covered in Module 03) is the best-known application of <strong>3D die stacking</strong>, but the underlying technology has broader implications for DRAM scaling.</p>
+
+      <h3>Through-Silicon Vias (TSVs)</h3>
+      <p>A <strong>TSV</strong> is a vertical electrical connection drilled through a silicon die and filled with copper. It allows signals and power to pass between stacked dies without long wire bonds. TSVs enable:</p>
+      <ul>
+        <li>1024-bit wide bus between HBM dies and the base logic die</li>
+        <li>Very short interconnects → lower capacitance → lower power per bit transferred</li>
+        <li>Dense stacking: up to 12 DRAM dies in a single HBM3E stack</li>
+      </ul>
+
+      <h3>2.5D vs 3D Integration</h3>
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">2.5D (Interposer)</h4>
+          <ul>
+            <li>DRAM stack and logic die sit side-by-side on a silicon interposer</li>
+            <li>Connected via short interposer traces (not TSVs between logic and DRAM)</li>
+            <li>Used in: HBM-based GPUs (AMD MI300, NVIDIA H100)</li>
+            <li>Simpler integration; known-good die testing before assembly</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent2);">3D (Direct Stacking)</h4>
+          <ul>
+            <li>DRAM dies stacked directly on top of logic die using TSVs</li>
+            <li>Shortest possible interconnect — lowest latency, highest bandwidth density</li>
+            <li>Used in: AMD 3D V-Cache (SRAM), prototype DRAM-on-logic chips</li>
+            <li>Higher risk: failed DRAM die kills the whole package</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="processing-in-memory">Processing-in-Memory (PIM / NDP)</h2>
+      <p>The fundamental bottleneck in data-intensive computing is moving data from DRAM to the CPU — the <strong>"memory wall."</strong> Processing-in-Memory (PIM) and Near-Data Processing (NDP) move compute closer to, or inside, the DRAM itself.</p>
+
+      <h3>Approaches</h3>
+      <ul>
+        <li><strong>HBM-PIM (Samsung Aquabolt-XL):</strong> SIMD compute units integrated into each HBM pseudo-channel. Can execute simple operations (vector addition, activation functions) without moving data off the package.</li>
+        <li><strong>UPMEM PIM DIMMs:</strong> Standard DDR4 DIMMs with 8 RISC cores per DRAM chip — 2500+ cores per module. Used for genomics, database, and graph analytics.</li>
+        <li><strong>Micron GDDR6-AiM:</strong> AI-in-Memory GDDR6 with dot-product accelerators adjacent to each bank.</li>
+        <li><strong>CXL Memory Devices with Compute:</strong> CXL 3.x enables active memory devices with on-board processing accessible via standard protocol.</li>
+      </ul>
+
+      <div class="info-box note">
+        <strong>The Memory Wall</strong>
+        CPU compute throughput has grown ~3.5× per decade; DRAM bandwidth has grown ~2×. The gap widens every generation. For workloads that are bandwidth-bound (most ML inference, genomics, graph processing), moving compute to the data is more efficient than the reverse.
+      </div>
+
+      <h2 id="cxl">CXL — Compute Express Link Memory</h2>
+      <p><strong>CXL (Compute Express Link)</strong> is a cache-coherent interconnect standard built on top of PCIe 5.0/6.0 physical layer. CXL.mem allows a host CPU to access memory on an attached CXL device with cache-coherent semantics — the CPU can load/store to CXL memory just like DRAM, and the hardware maintains coherency automatically.</p>
+
+      <h3>CXL Memory Types</h3>
+      <table>
+        <thead><tr><th>Type</th><th>Description</th><th>Latency vs. DRAM</th></tr></thead>
+        <tbody>
+          <tr><td>CXL DRAM Expander</td><td>DDR5 DIMMs behind a CXL controller — expands memory capacity beyond socket limits</td><td>+100–300 ns</td></tr>
+          <tr><td>CXL Persistent Memory</td><td>PMEM (e.g., 3D XPoint-class) behind CXL — byte-addressable non-volatile storage</td><td>+200–500 ns</td></tr>
+          <tr><td>CXL Pooled Memory</td><td>Shared memory fabric — multiple hosts share a pool; dynamic allocation per workload</td><td>+300–600 ns</td></tr>
+        </tbody>
+      </table>
+
+      <p>CXL enables <strong>memory disaggregation</strong>: instead of each server having dedicated DRAM, a datacenter can pool memory resources and allocate them to workloads on demand. This improves utilization and reduces over-provisioning costs.</p>
+
+      <h2 id="reliability">Reliability & Failure Modes</h2>
+      <p>DRAM in production systems faces multiple reliability challenges beyond Rowhammer:</p>
+
+      <h3>Retention Failures</h3>
+      <p>At elevated temperatures or high cell leakage (manufacturing variation), some cells drain faster than others. If tREFI is too long, these <strong>weak cells</strong> lose data between refreshes. This is why servers operate at the conservative JEDEC tREFI and why high-temperature operation requires more frequent refresh.</p>
+
+      <h3>Variable Retention Time (VRT)</h3>
+      <p>Some cells exhibit <strong>metastability</strong> — their retention time randomly switches between fast-leaking and normal-leaking states on a timescale of minutes to hours. This makes them nearly impossible to detect with standard burn-in tests, and they can cause field failures in production.</p>
+
+      <h3>Write Disturb</h3>
+      <p>Writing to one cell can disturb the stored charge in physically adjacent cells, similar to (but distinct from) Rowhammer. More significant in high-density 3D NAND, but present to a lesser degree in DRAM at advanced nodes.</p>
+
+      <h3>Cosmic Ray Single-Event Upsets (SEU)</h3>
+      <p>High-energy cosmic ray neutrons can strike a cell and deposit enough charge to flip its state. At sea level, the soft error rate for DRAM is approximately <strong>1 FIT per 1 Mb</strong> (1 failure per 10⁹ hours per megabit). A 256 GB server has ~2 trillion bits — statistically, a cosmic-ray bit flip every few hours without ECC.</p>
+
+      <h2 id="future">Beyond DRAM — What Comes Next?</h2>
+      <p>DRAM scaling is approaching fundamental physical limits. The 1T1C cell requires a minimum capacitor size to hold enough charge, and the access transistor cannot shrink indefinitely without excessive leakage. The industry is exploring several post-DRAM technologies:</p>
+
+      <table>
+        <thead><tr><th>Technology</th><th>Principle</th><th>Status</th><th>Advantage over DRAM</th></tr></thead>
+        <tbody>
+          <tr><td><strong>MRAM</strong> (Magnetic RAM)</td><td>Magnetic tunnel junction — spin state stores data</td><td>Production (embedded); GB-scale in development</td><td>Non-volatile, no refresh, radiation-hard</td></tr>
+          <tr><td><strong>FeRAM</strong> (Ferroelectric RAM)</td><td>Polarization of ferroelectric capacitor stores bit</td><td>Niche production (TI, Fujitsu)</td><td>Non-volatile, low power write</td></tr>
+          <tr><td><strong>PCM</strong> (Phase-Change Memory)</td><td>Crystalline vs. amorphous resistance difference</td><td>Production (Intel Optane — discontinued 2022)</td><td>Non-volatile, higher density potential</td></tr>
+          <tr><td><strong>RRAM / ReRAM</strong></td><td>Filament formation changes resistance</td><td>Research; limited production</td><td>Sub-5 nm scaling potential</td></tr>
+          <tr><td><strong>2T0C DRAM</strong></td><td>Two transistors, no capacitor — charge in floating body</td><td>Research (Toshiba, others)</td><td>Better scaling without capacitor</td></tr>
+          <tr><td><strong>3D DRAM</strong></td><td>Vertical cell arrays — grow upward instead of laterally</td><td>Early development (Samsung, SK Hynix)</td><td>Density scaling continues past 2D limits</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box note">
+        <strong>DRAM Will Survive</strong>
+        Despite decades of predictions that DRAM would be replaced, it has outlasted every challenger. Its combination of density, cost, performance, and mature manufacturing ecosystem is extraordinarily difficult to displace. The most likely near-term scenario is DRAM co-existing with emerging NVM in a multi-tier hierarchy — DRAM for working set, persistent memory for capacity — connected via CXL.
+      </div>
+
+      <h3>The Roadmap at a Glance</h3>
+      <div class="diagram">
+        <div class="diagram-title">DRAM Technology Roadmap (approximate)</div>
+        <div style="font-family:var(--mono); font-size:0.78rem; display:flex; flex-direction:column; gap:6px; max-width:580px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:60px; color:var(--text-muted); text-align:right; font-size:0.72rem;">2024</div>
+            <div style="flex:1; padding:8px 14px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); border-radius:6px; color:var(--accent);">DDR5-8400 · LPDDR5X · HBM3E · 10nm-class process</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:60px; color:var(--text-muted); text-align:right; font-size:0.72rem;">2025–26</div>
+            <div style="flex:1; padding:8px 14px; background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.3); border-radius:6px; color:var(--accent2);">DDR5-12800 · LPDDR6 · HBM4 · CXL 3.x proliferation</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:60px; color:var(--text-muted); text-align:right; font-size:0.72rem;">2027–28</div>
+            <div style="flex:1; padding:8px 14px; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); border-radius:6px; color:#c4b5fd;">DDR6 · HBM4E · 3D DRAM early production · GDDR8</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:60px; color:var(--text-muted); text-align:right; font-size:0.72rem;">2030+</div>
+            <div style="flex:1; padding:8px 14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; color:#6ee7b7;">3D DRAM mainstream · Hybrid DRAM+NVM tiers · Post-DRAM emergence</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-nav">
+        <a href="timing.html" class="prev">Timing Parameters</a>
+        <a href="../index.html" class="next">Back to Home</a>
+      </div>
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-bottom"><span>&copy; 2026 DRAM University. Open educational content.</span></div>
+  </footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>

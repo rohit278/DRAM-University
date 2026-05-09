@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timing Parameters — DRAM University</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">DRAM<span>University</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+      <ul class="nav-links">
+        <li><a href="basics.html">Basics</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="types.html">DRAM Types</a></li>
+        <li><a href="operations.html">Operations</a></li>
+        <li><a href="timing.html" class="active">Timing</a></li>
+        <li><a href="advanced.html">Advanced</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="../index.html">Home</a> › Module 05</div>
+      <div class="module-badge">Module 05 — Timing Parameters</div>
+      <h1>DRAM Timing Parameters</h1>
+      <p>Decode "16-18-18-38-2T", understand what every parameter controls, and learn how tighter timings translate to real-world performance.</p>
+    </div>
+  </div>
+
+  <div class="content-layout">
+    <aside class="toc">
+      <h4>On This Page</h4>
+      <ul class="toc-list">
+        <li><a href="#notation">Timing Notation</a></li>
+        <li><a href="#cl">CAS Latency (CL)</a></li>
+        <li><a href="#trcd">tRCD</a></li>
+        <li><a href="#trp">tRP</a></li>
+        <li><a href="#tras">tRAS</a></li>
+        <li><a href="#secondary">Secondary Timings</a></li>
+        <li><a href="#tertiary">Tertiary Timings</a></li>
+        <li><a href="#command-rate">Command Rate</a></li>
+        <li><a href="#bandwidth">Bandwidth Formula</a></li>
+        <li><a href="#xmp">XMP &amp; EXPO</a></li>
+        <li><a href="#table">Full Timing Reference</a></li>
+      </ul>
+    </aside>
+
+    <article class="prose">
+
+      <h2 id="notation">Timing Notation</h2>
+      <p>When you buy RAM you'll see a spec like <strong>DDR4-3200 CL16-18-18-38</strong>. This encodes four primary timing parameters as clock cycle counts, followed by an optional command rate:</p>
+
+      <div class="diagram">
+        <div class="diagram-title">Primary Timing String Decoded</div>
+        <div style="font-family:var(--mono); font-size:0.82rem; display:flex; gap:0; max-width:560px;">
+          <div style="flex:1; padding:14px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); border-radius:8px 0 0 8px; text-align:center;">
+            <div style="font-size:1.6rem; font-weight:700; color:var(--accent);">16</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">CL<br/>CAS Latency</div>
+          </div>
+          <div style="flex:1; padding:14px; background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.35); text-align:center;">
+            <div style="font-size:1.6rem; font-weight:700; color:var(--accent2);">18</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">tRCD<br/>RAS-to-CAS</div>
+          </div>
+          <div style="flex:1; padding:14px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.35); text-align:center;">
+            <div style="font-size:1.6rem; font-weight:700; color:#a78bfa;">18</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">tRP<br/>Row Precharge</div>
+          </div>
+          <div style="flex:1; padding:14px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:0 8px 8px 0; text-align:center;">
+            <div style="font-size:1.6rem; font-weight:700; color:#34d399;">38</div>
+            <div style="color:var(--text-muted); font-size:0.72rem; margin-top:4px;">tRAS<br/>Active-to-Pre</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <strong>Cycles vs. Nanoseconds</strong>
+        Timing values are always in <em>clock cycles</em> in spec sheets. To convert to nanoseconds: <code>ns = cycles / frequency(GHz)</code>. DDR4-3200 runs at 1600 MHz (1.6 GHz), so CL16 = 16 / 1.6 = <strong>10 ns</strong>. Lower frequency RAM with the same CL number has higher absolute latency.
+      </div>
+
+      <h2 id="cl">CAS Latency — CL</h2>
+      <p><strong>CAS Latency (CL)</strong>, also written <code>tCL</code> or <code>tCAS</code>, is the delay in clock cycles between the <em>READ command</em> being issued and the <em>first data bit appearing</em> on the DQ pins. It represents the column access time from the open row buffer.</p>
+
+      <p>CL is the single most impactful timing for random-access latency. A row-buffer hit incurs only CL worth of delay. For sequential streaming, CL matters far less than bandwidth.</p>
+
+      <div class="diagram">
+        <div class="diagram-title">CAS Latency Visualization (CL = 4, simplified)</div>
+        <div class="timing-diagram">
+          <div class="timing-row">
+            <span class="timing-label">CLK</span>
+            <div class="timing-bar" style="gap:2px;">
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">1</div>
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">2</div>
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">3</div>
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">4</div>
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">5</div>
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">6</div>
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">7</div>
+              <div class="timing-seg" style="flex:1; background:rgba(100,116,139,0.3); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">8</div>
+            </div>
+          </div>
+          <div class="timing-row">
+            <span class="timing-label">CMD</span>
+            <div class="timing-bar" style="gap:2px;">
+              <div class="timing-seg" style="flex:1; background:rgba(59,130,246,0.3); border:1px solid rgba(59,130,246,0.5); border-radius:3px; color:var(--accent); font-size:0.65rem; font-weight:700;">READ</div>
+              <div class="timing-seg" style="flex:3; background:rgba(100,116,139,0.1); border:1px solid var(--border); border-radius:3px; color:var(--text-muted); font-size:0.65rem;">NOP × 3 (CL=4)</div>
+              <div class="timing-seg" style="flex:4; background:rgba(16,185,129,0.25); border:1px solid rgba(16,185,129,0.4); border-radius:3px; color:#34d399; font-size:0.65rem; font-weight:700;">D0 D1 D2 D3 D4 D5 D6 D7</div>
+            </div>
+          </div>
+          <div class="timing-row" style="margin-top:4px;">
+            <span class="timing-label" style="font-size:0.68rem; color:var(--accent);">←</span>
+            <div style="flex:1; display:flex; align-items:center; gap:4px; font-size:0.7rem; color:var(--accent);">
+              <span style="flex:1; border-top:1px dashed var(--accent);"></span>
+              <span>CL = 4 cycles</span>
+              <span style="flex:3; border-top:1px dashed var(--accent);"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="trcd">tRCD — RAS-to-CAS Delay</h2>
+      <p><strong>tRCD</strong> (Row Address to Column Address Delay) is the minimum number of cycles that must elapse between issuing an <strong>ACTIVATE</strong> command and issuing a <strong>READ or WRITE</strong> command to that bank.</p>
+      <p>This time allows the sense amplifiers to fully amplify and stabilize the row data. Issuing a column command too early, before sense amplification completes, would result in reading garbage or corrupting the cell data.</p>
+
+      <ul>
+        <li>Physically: time for sense amp to reach full swing and the row buffer to settle</li>
+        <li>Typical DDR4: 13–17 ns absolute, regardless of frequency</li>
+        <li>A row buffer hit bypasses this delay entirely (no new ACT needed)</li>
+      </ul>
+
+      <h2 id="trp">tRP — Row Precharge Time</h2>
+      <p><strong>tRP</strong> is the minimum cycles between a <strong>PRECHARGE</strong> command and a subsequent <strong>ACTIVATE</strong> on the same bank. It represents the time needed to equalize the bit lines back to VDD/2 after closing a row.</p>
+      <p>tRP and tRCD are often equal (both ~14–18 cycles on DDR4) because both are governed by the same sense amplifier circuit — one driving the lines up, one pulling them back to mid-rail.</p>
+
+      <h2 id="tras">tRAS — Active-to-Precharge Time</h2>
+      <p><strong>tRAS</strong> is the minimum cycles a bank must remain active (between ACT and PRE). It ensures that the sense amplifiers have had enough time to fully restore all cell charges in the open row before being disconnected.</p>
+
+      <div class="info-box note">
+        <strong>tRAS Minimum</strong>
+        <code>tRAS ≥ tRCD + CL + BL/2</code> — the row must stay open long enough to finish a read burst before precharging. Violating this corrupts the cells that haven't been fully restored yet.
+      </div>
+
+      <p>The <strong>Row Cycle Time (tRC)</strong> is the total time to open a row, use it, and open a different row in the same bank:</p>
+      <pre><code>tRC = tRAS + tRP</code></pre>
+
+      <h2 id="secondary">Secondary Timings</h2>
+      <p>Beyond the primary four, many secondary timings govern specific inter-command constraints:</p>
+
+      <table>
+        <thead><tr><th>Parameter</th><th>Full Name</th><th>Governs</th><th>Typical DDR4 Value</th></tr></thead>
+        <tbody>
+          <tr><td><code>tCCD_L</code></td><td>CAS-to-CAS Delay Long</td><td>Back-to-back reads/writes in the <em>same</em> bank group</td><td>6–8 cycles</td></tr>
+          <tr><td><code>tCCD_S</code></td><td>CAS-to-CAS Delay Short</td><td>Back-to-back reads/writes in <em>different</em> bank groups</td><td>4 cycles</td></tr>
+          <tr><td><code>tRRD_L</code></td><td>Row-to-Row Delay Long</td><td>ACT commands to same bank group</td><td>6–7 cycles</td></tr>
+          <tr><td><code>tRRD_S</code></td><td>Row-to-Row Delay Short</td><td>ACT commands to different bank groups</td><td>4 cycles</td></tr>
+          <tr><td><code>tFAW</code></td><td>Four Activate Window</td><td>Max 4 ACTs allowed within any tFAW window</td><td>24–34 cycles</td></tr>
+          <tr><td><code>tWR</code></td><td>Write Recovery Time</td><td>Cycles after write data before PRE can be issued</td><td>15–20 cycles</td></tr>
+          <tr><td><code>tWTR_L</code></td><td>Write-to-Read Turnaround Long</td><td>Switching from write to read in same bank group</td><td>10–12 cycles</td></tr>
+          <tr><td><code>tWTR_S</code></td><td>Write-to-Read Turnaround Short</td><td>Switching from write to read in different bank group</td><td>4 cycles</td></tr>
+          <tr><td><code>tRTP</code></td><td>Read-to-Precharge Time</td><td>Min cycles after READ before PRE</td><td>7–10 cycles</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Why tCCD_L vs tCCD_S matters</h3>
+      <p>This is the key reason bank groups exist in DDR4/DDR5. A memory controller scheduling reads across different bank groups can issue them 4 cycles apart instead of 6+. Over millions of accesses per second, this difference is significant for throughput-sensitive workloads.</p>
+
+      <h2 id="tertiary">Tertiary Timings</h2>
+      <p>Tertiary timings are rarely exposed in BIOS but matter for extreme overclocking and signal integrity:</p>
+
+      <table>
+        <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>tREFI</code></td><td>Refresh interval — increasing this reduces refresh overhead but risks data corruption at high temperatures</td></tr>
+          <tr><td><code>tRFC</code></td><td>Refresh cycle time — how long DRAM is locked during refresh; varies by density</td></tr>
+          <tr><td><code>tXP</code></td><td>Exit power-down latency</td></tr>
+          <tr><td><code>tCKE</code></td><td>Minimum CKE pulse width for power-down entry/exit</td></tr>
+          <tr><td><code>tMOD</code></td><td>Mode Register Set delay — after writing a mode register, wait tMOD before commands</td></tr>
+          <tr><td><code>tZQCS / tZQCL</code></td><td>ZQ calibration short/long — impedance self-calibration timing</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="command-rate">Command Rate (CR)</h2>
+      <p>The <strong>Command Rate</strong> (also called T1 or T2) defines how many clock cycles the memory controller waits between consecutive commands when switching between chip-selects (ranks or DIMMs).</p>
+      <ul>
+        <li><strong>1T (CR1):</strong> Commands can be issued every clock — lowest latency, requires robust signal integrity</li>
+        <li><strong>2T (CR2):</strong> Commands issued every 2 clocks — easier for the controller and signal traces; adds 1 cycle of latency to every operation</li>
+        <li><strong>3T (Gear-3 in DDR5):</strong> DDR5 introduced Gear modes where the controller runs at a fraction of DRAM speed to ease SI at extreme frequencies</li>
+      </ul>
+
+      <h2 id="bandwidth">Bandwidth Formula</h2>
+      <p>Peak theoretical memory bandwidth for a DRAM configuration:</p>
+
+      <div class="diagram">
+        <div class="diagram-title">Peak Bandwidth Calculation</div>
+        <div style="font-family:var(--mono); font-size:0.88rem; padding:8px;">
+          <div style="color:var(--text-dim); margin-bottom:12px;">BW (GB/s) = Transfer Rate (MT/s) × Bus Width (bytes) × Channels</div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:8px;">Example: DDR5-6400, 64-bit bus, dual-channel:</div>
+          <div style="color:var(--accent);">BW = 6400 MT/s × 8 bytes × 2 = <strong>102.4 GB/s</strong></div>
+          <div style="color:var(--text-muted); font-size:0.78rem; margin-top:12px; margin-bottom:8px;">Example: DDR4-3200, 64-bit bus, dual-channel:</div>
+          <div style="color:var(--accent2);">BW = 3200 MT/s × 8 bytes × 2 = <strong>51.2 GB/s</strong></div>
+        </div>
+      </div>
+
+      <p>Effective bandwidth is always lower than theoretical peak due to refresh overhead, timing gaps (tCCD, tRCD, tRP), read-to-write turnarounds, and command bus utilization.</p>
+
+      <h2 id="xmp">XMP & EXPO — Overclocking Profiles</html>
+      <p>JEDEC defines conservative standard speeds (DDR4-3200, DDR5-4800) that work on all compliant hardware. Manufacturers create faster <strong>overclocking profiles</strong> stored in the SPD (Serial Presence Detect) EEPROM on the DIMM:</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4 style="color:var(--accent);">XMP — Extreme Memory Profile (Intel)</h4>
+          <ul>
+            <li>Developed by Intel for DDR3/DDR4/DDR5</li>
+            <li>Up to 3 profiles stored in SPD (XMP 3.0)</li>
+            <li>Enabled in BIOS/UEFI with one click</li>
+            <li>Profiles can include voltage, frequency, and all primary/secondary timings</li>
+            <li>XMP 3.0 adds user-writable custom profiles</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:#a78bfa;">EXPO — Extended Profiles for Overclocking (AMD)</h4>
+          <ul>
+            <li>AMD's alternative to XMP for Ryzen platforms</li>
+            <li>Introduced with DDR5 and Zen 4 (AM5)</li>
+            <li>Optimized for AMD's memory controller characteristics</li>
+            <li>Stored alongside XMP profiles in SPD</li>
+            <li>Tuned for AMD's Infinity Fabric (FCLK) relationship</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box warn">
+        <strong>Stability Note</strong>
+        XMP/EXPO profiles are technically overclocks — they exceed JEDEC specifications. Instability can manifest as random crashes, memory errors under load, or POST failures. Always run a memory stability test (MemTest86, HCI Memtest) after enabling an XMP/EXPO profile.
+      </div>
+
+      <h2 id="table">Full Timing Reference</h2>
+      <table>
+        <thead><tr><th>Timing</th><th>DDR3-1600</th><th>DDR4-3200</th><th>DDR5-6400</th><th>What it controls</th></tr></thead>
+        <tbody>
+          <tr><td><code>CL</code></td><td>11</td><td>16–22</td><td>32–46</td><td>Read latency from open row</td></tr>
+          <tr><td><code>tRCD</code></td><td>11</td><td>16–22</td><td>32–46</td><td>ACT → CAS minimum delay</td></tr>
+          <tr><td><code>tRP</code></td><td>11</td><td>16–22</td><td>32–46</td><td>PRE → ACT minimum delay</td></tr>
+          <tr><td><code>tRAS</code></td><td>28</td><td>36–52</td><td>76–106</td><td>Minimum row active time</td></tr>
+          <tr><td><code>tRC</code></td><td>39</td><td>52–74</td><td>108–152</td><td>tRAS + tRP</td></tr>
+          <tr><td><code>tRFC</code></td><td>260 ns</td><td>350 ns</td><td>410 ns</td><td>Refresh lock-out duration</td></tr>
+          <tr><td><code>tREFI</code></td><td>7.8 µs</td><td>7.8 µs</td><td>3.9 µs</td><td>Refresh interval</td></tr>
+          <tr><td><code>tFAW</code></td><td>20–40</td><td>16–34</td><td>—</td><td>4-activation window</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.82rem; color:var(--text-muted);">Cycle counts depend on specific speed grade and die revision. DDR5 CL values appear higher because the cycle time is shorter — absolute ns latency is comparable or better.</p>
+
+      <div class="page-nav">
+        <a href="operations.html" class="prev">Operations</a>
+        <a href="advanced.html" class="next">Advanced Topics</a>
+      </div>
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-bottom"><span>&copy; 2026 DRAM University. Open educational content.</span></div>
+  </footer>
+  <script src="../js/main.js"></script>
+</body>
+</html>
